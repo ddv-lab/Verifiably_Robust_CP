@@ -1,0 +1,90 @@
+global:
+  device: 'cuda'
+  n_splits: 50
+
+
+cp:
+  alpha: 0.1
+
+
+cqr:
+  quantiles:
+  - 0.05
+  - 0.95
+  quantiles_net:
+  - 0.1
+  - 0.9
+  coverage_factor: 0.85
+
+  model:
+    epochs: 400
+    lr: 0.0001
+    batch_size: 64
+    hidden_size: 64
+    dropout: 0.1
+    decay: 0.000001
+    cv_ratio: 0.05
+
+
+data:
+  n_states: 5000
+  n_suffixes: 10
+  prefix_len: 1
+  suffix_len: 5
+  n_train: 1000
+  n_test: 2000
+  n_cal: 2000
+  adv_prtb_eps: 0.01
+
+
+env:
+  n_agents: 3
+  n_adversaries: 0
+  n_landmarks: 3
+  load_policies: True
+
+
+path:
+  root: [CHANGE ME]
+  env_name: 'spread'
+  dataset_name: 'example'
+
+
+rand:
+  default_seed: 22
+  cqr:
+    cross_val_seed: 22
+  sim:
+    noise_seed: 22
+    noisy: False
+    noise_var: 0.01
+    noise_func: 'normal'
+
+    world_seed: 22
+    world_func: 'uniform'
+
+
+sim:
+  buffer_size: 90000
+#  render_mode: 'human'
+
+  generator:
+    parallel: True
+    n_threads: 16
+
+  policy:
+    eps_test: 0.1
+    eps_train: 0.1
+    lr: 1e-03
+    gamma: 0.95
+    n_step: 3
+    target_update_freq: 320
+    epoch: 20
+    step_per_epoch: 6000
+    step_per_collect: 60
+    update_per_step: 0.1
+    batch_size: 240
+    # hidden_sizes: None
+    training_num: 1
+    test_num: 1
+    render: 0.25
