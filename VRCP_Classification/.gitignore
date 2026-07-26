@@ -1,0 +1,10 @@
+.venv/
+.pytest_cache/
+__pycache__/
+*.pyc
+Datasets/*
+!Datasets/tinyimagenet.sh
+Adversarial_Examples/
+Bounds/
+Results/
+.ruff_cache/

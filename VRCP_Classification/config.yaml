@@ -1,0 +1,30 @@
+# Default experiment configuration for VRCP_Classification.
+#
+# Any value here can be overridden per-run via the matching CLI flag on
+# run_experiment.py, e.g. `--n_s 512 --delta 0.03` -- this keeps parameter
+# sweeps (see INSTRUCTIONS.md, e.g. Figure 2a/2b) ergonomic without having to
+# edit this file between runs.
+
+experiment:
+  alpha: 0.1          # desired nominal marginal coverage
+  delta: 0.02          # L-p bound on the adversarial noise (epsilon)
+  splits: 50            # number of experiments to estimate coverage
+  ratio: 2                # ratio between adversarial noise bound and smoothing noise
+  norm: "2"                 # l_p norm used for epsilon ball: "2" or "inf"
+  n_s: 256                    # number of samples used for estimating smoothed score (power of 2)
+  batch_size: 1024              # images per GPU batch (power of 2, >= n_s)
+  dataset: "CIFAR10"               # CIFAR10 | CIFAR100 | TINYNET
+  arc: "CNN"                          # classifier architecture
+  my_model: true                        # true for our trained models, false for Cohen et al.'s
+  n_test: 10000                           # number of test points (capped to dataset size)
+
+path:
+  root: "."
+  datasets: "Datasets"
+  checkpoints: "Checkpoints"
+  adversarial_examples: "Adversarial_Examples"
+  bounds: "Bounds"
+  results: "Results"
+
+rand:
+  seed: 0

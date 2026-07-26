@@ -5,7 +5,7 @@ import torch.multiprocessing as mp
 import os
 from typing import MutableSequence, Optional, Tuple
 
-import gym
+import gymnasium as gym
 import numpy as np
 import torch
 from torch.utils.tensorboard import SummaryWriter

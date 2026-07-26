@@ -1,16 +1,13 @@
+import argparse
+import os
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import torch.nn.functional as F
-import torch.backends.cudnn as cudnn
-from auto_LiRPA.utils import Flatten
-from VRCP.utils import ConvNet
-
 import torchvision
 import torchvision.transforms as transforms
 
-import os
-import argparse
+from VRCP.models import build_model, checkpoint_path
 from train_utils import progress_bar
 
 parser = argparse.ArgumentParser(description='Training')
@@ -44,38 +41,19 @@ transform_test = transforms.Compose([
     transforms.ToTensor(),
 ])
 
-def preprocess_train(example_batch):
-    """Apply train_transforms across a batch."""
-    example_batch["pixel_values"] = [
-        transform_train(image.convert("RGB")) for image in example_batch["image"]
-    ]
-    return example_batch
-
-def preprocess_valid(example_batch):
-    """Apply valid_transforms across a batch."""
-    example_batch["pixel_values"] = [
-        transform_test(image.convert("RGB")) for image in example_batch["image"]
-    ]
-    return example_batch
-
-def collate_fn(examples):
-    pixel_values = torch.stack([example["pixel_values"] for example in examples])
-    labels = torch.tensor([example["label"] for example in examples])
-    return {"pixel_values": pixel_values, "labels": labels}
-
 if dataset == "TINYNET":
     transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
     # Load train set
-    trainset = torchvision.datasets.ImageFolder(root='tiny-imagenet-200/train', transform=transform)
+    trainset = torchvision.datasets.ImageFolder(root='Datasets/tiny-imagenet-200/train', transform=transform)
     # Load test set
-    testset = torchvision.datasets.ImageFolder(root='tiny-imagenet-200/val', transform=transform)
+    testset = torchvision.datasets.ImageFolder(root='Datasets/tiny-imagenet-200/val', transform=transform)
 
     trainloader = torch.utils.data.DataLoader(
         trainset, batch_size=128, shuffle=True, num_workers=2)
-    
+
     testloader = torch.utils.data.DataLoader(
         testset, batch_size=100, shuffle=False, num_workers=2)
 
@@ -108,51 +86,16 @@ else:
 # Model
 print('==> Building model..')
 
-if dataset == "CIFAR10":
-    ckptPath = "Checkpoints/cifar10CNN.pth"
-    net = nn.Sequential(
-                nn.Conv2d(3, 16, 4, stride=2, padding=1),
-                nn.ReLU(),
-                nn.Conv2d(16, 32, 4, stride=2, padding=1),
-                nn.ReLU(),
-                nn.AvgPool2d(2, 2),
-                nn.Dropout(0.4),
-                Flatten(),
-                nn.Linear(512,1024),
-                nn.ReLU(),
-                nn.Linear(1024, 10)
-    )
-
-elif dataset == "CIFAR100":
-    ckptPath = "Checkpoints/cifar100CNN.pth"
-    net = nn.Sequential(
-                nn.Conv2d(3, 32, kernel_size=3, padding=1),
-                nn.ReLU(),
-                nn.AvgPool2d(2, 2),
-                nn.Conv2d(32, 64, kernel_size=3, padding=1),
-                nn.ReLU(),
-                nn.AvgPool2d(2, 2),
-                nn.Dropout(0.4),
-                nn.Conv2d(64, 64, kernel_size=3, padding=1),
-                nn.ReLU(),
-                nn.AvgPool2d(2, 2),
-                nn.Dropout(0.4),
-                Flatten(),
-                nn.Linear(1024,256),
-                nn.ReLU(),
-                nn.Linear(256, 1024)
-            )
-else:
-    ckptPath = "Checkpoints/tinynetCNN.pth"
-    net = ConvNet()
+ckptPath = checkpoint_path(dataset, "Checkpoints")
+net = build_model(dataset, arc="CNN")
 
 net = net.to(device)
 
 if args.resume:
     # Load checkpoint.
     print('==> Resuming from checkpoint..')
-    assert os.path.isdir('checkpoint'), 'Error: no checkpoint directory found!'
-    checkpoint = torch.load('./'+ckptPath)
+    assert os.path.isdir('Checkpoints'), 'Error: no checkpoint directory found!'
+    checkpoint = torch.load(ckptPath)
     net.load_state_dict(checkpoint['net'])
     best_acc = checkpoint['acc']
     start_epoch = checkpoint['epoch']
@@ -218,7 +161,7 @@ def test(epoch):
         }
         if not os.path.isdir('Checkpoints'):
             os.mkdir('Checkpoints')
-        torch.save(state, './'+ckptPath)
+        torch.save(state, ckptPath)
         best_acc = acc
 
 

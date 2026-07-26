@@ -193,8 +193,8 @@ def compute_coverage_per_sample(y_test,y_lower,y_upper,significance,name="",x_te
         category_map = np.array([condition((x_test[i, :], y_test[i])) for i in range(y_test.size)])
         categories = np.unique(category_map)
         
-        coverage = np.empty(len(categories), dtype=np.object)
-        length = np.empty(len(categories), dtype=np.object)
+        coverage = np.empty(len(categories), dtype=object)
+        length = np.empty(len(categories), dtype=object)
         
         cnt = 0
         
